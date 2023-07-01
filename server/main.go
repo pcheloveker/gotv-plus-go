@@ -2,19 +2,21 @@ package main
 
 import (
 	"flag"
-	grpc "github.com/FlowingSPDG/gotv-plus-go/server/src/grpc"
-	"github.com/FlowingSPDG/gotv-plus-go/server/src/handlers"
-	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+
+	grpc "github.com/FlowingSPDG/gotv-plus-go/server/src/grpc"
+	"github.com/FlowingSPDG/gotv-plus-go/server/src/handlers"
 )
 
 var (
 	addr     = flag.String("addr", "localhost:8080", "Address where GOTV+ hosted at")
 	debug    = flag.Bool("debug", false, "Debug mode option")
 	grpcaddr = flag.String("grpc", "localhost:50055", "gRPC API Address")
-	delay    = flag.Int("delay", 3, "How much frags to delay.")
+	delay    = flag.Int("delay", 6, "How much frags to delay.")
 	auth     = flag.String("auth", "gopher", "GOTV+ Auth password")
 )
 
@@ -39,7 +41,8 @@ func main() {
 
 	r.GET("/", func(c *gin.Context) {
 		m, _ := handlers.Matches.GetTokens()
-		log.Printf("Matches : %v\n", m)
+		log.Printf("Tokens : %v\n", m)
+		c.Header("Cache-Control", "public, max-age=10")
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{
 			"Title":   "GOTV+ for Gophers",
 			"Matches": m,
@@ -55,13 +58,18 @@ func main() {
 	r.GET("/match/id/:id/:fragment_number", handlers.SyncByIDHandler)
 	r.GET("/match/id/:id/:fragment_number/:frametype", handlers.GetBodyByIDHandler)
 
-	// tv_broadcast_url "http://localhost:8080/token/"
+	// playcast "http://localhost:8080/match/id/YOUR_MATCH_ID"
+	r.GET("/match/id/:id/token/:token/:fragment_number/:frametype", handlers.GetBodyHandler)
+
+	// tv_broadcast_url "http://localhost:8080/token"
 	r.POST("/token/:token/:fragment_number/:frametype", handlers.PostBodyHandler)
 
 	// tv_broadcast_url "http://localhost:8080/id/YOUR_MATCH_ID"
 	r.POST("/id/:id/:token/:fragment_number/:frametype", handlers.PostBodyByIDHandler)
 
 	r.GET("/matches", handlers.GetListHandler)
+
+	r.GET("/short", handlers.GetListHandlerShort)
 
 	log.Panicf("Failed to listen port %s : %v\n", *addr, r.Run(*addr))
 }

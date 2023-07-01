@@ -47,6 +47,64 @@ func (g *GOTVPLUS) GetMatches() (*pb.GetMatchesReply, error) {
 	return matches, nil
 }
 
+func (g *GOTVPLUS) GetMatchByID(id string) (*pb.Match, error) {
+	c := *g.Client
+	option := &pb.GetMatchRequest{
+		Ids: &pb.GetMatchRequest_Id{
+			Id: id,
+		},
+	}
+	matches, err := c.GetMatch(context.TODO(), option)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Match : %v\n", *matches)
+	return matches, nil
+}
+
+func (g *GOTVPLUS) GetMatchByToken(token string) (*pb.Match, error) {
+	c := *g.Client
+	option := &pb.GetMatchRequest{
+		Ids: &pb.GetMatchRequest_Token{
+			Token: token,
+		},
+	}
+	matches, err := c.GetMatch(context.TODO(), option)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Match : %v\n", *matches)
+	return matches, nil
+}
+
+func (g *GOTVPLUS) DeleteMatchByID(id string) error {
+	c := *g.Client
+	option := &pb.DeleteMatchRequest{
+		Ids: &pb.DeleteMatchRequest_Id{
+			Id: id,
+		},
+	}
+	_, err := c.DeleteMatch(context.TODO(), option)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *GOTVPLUS) DeleteMatchByToken(token string) error {
+	c := *g.Client
+	option := &pb.DeleteMatchRequest{
+		Ids: &pb.DeleteMatchRequest_Token{
+			Token: token,
+		},
+	}
+	_, err := c.DeleteMatch(context.TODO(), option)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (g *GOTVPLUS) MarkID(token string, id string) error {
 	c := *g.Client
 	option := &pb.MarkIDRequest{
@@ -54,6 +112,48 @@ func (g *GOTVPLUS) MarkID(token string, id string) error {
 		Id:    id,
 	}
 	_, err := c.MarkID(context.TODO(), option)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *GOTVPLUS) SaveMatchToFileByID(id string, path string) error {
+	c := *g.Client
+	option := &pb.SaveMatchToFileRequest{
+		Ids: &pb.SaveMatchToFileRequest_Id{
+			Id: id,
+		},
+		Path: path,
+	}
+	_, err := c.SaveMatchToFile(context.TODO(), option)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *GOTVPLUS) SaveMatchToFileByToken(token string, path string) error {
+	c := *g.Client
+	option := &pb.SaveMatchToFileRequest{
+		Ids: &pb.SaveMatchToFileRequest_Token{
+			Token: token,
+		},
+		Path: path,
+	}
+	_, err := c.SaveMatchToFile(context.TODO(), option)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *GOTVPLUS) LoadMatchFromFile(token string) error {
+	c := *g.Client
+	option := &pb.LoadMatchFromFileRequest{
+		Token: token,
+	}
+	_, err := c.LoadMatchFromFile(context.TODO(), option)
 	if err != nil {
 		return err
 	}
